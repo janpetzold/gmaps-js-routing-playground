@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Brasov</title>
+    <script type="text/javascript">
+        var map;
+        var myMarker;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 19,
+                center: { lat: 45.66181182861328, lng: 25.60649299621582 },
+                heading: 95,
+                tilt: 70,
+                disableDefaultUI: true,
+                mapId: "7a3305cc7db13890"
+            });
+
+            myMarker = new google.maps.Marker({
+                position: map.getCenter(),
+                map: map,
+                icon: 'arrow_30.png'
+            });
+        }
+
+        const adjustMap = function (mode, amount) {
+            switch (mode) {
+                case "tilt":
+                    map.setTilt(map.getTilt() + amount);
+                    break;
+                case "rotate":
+                    map.setHeading(map.getHeading() + amount);
+                    break;
+                default:
+                    break;
+                }
+        };
+
+        function animateCamera(time) {
+            // Update the heading, leave everything else as-is.
+            map.moveCamera({
+                heading: (time / 1000) * 3
+            });
+
+            requestAnimationFrame(animateCamera);
+        }
+
+        // test animation
+        //requestAnimationFrame(animateCamera);
+
+        window.initMap = initMap;
+    </script>
+
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+
+      /* Optional: Makes the sample page fill the window. */
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #maps-container {
+        width: 400px;
+        height: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="maps-container">
+        <div id="map"></div>
+    </div>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=XXX&callback=initMap&v=beta" defer></script>
+
+  </body>
+
+  
+
+</html>
