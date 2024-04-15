@@ -16,11 +16,11 @@
                 mapId: "7a3305cc7db13890"
             });
 
-            myMarker = new google.maps.Marker({
-                position: map.getCenter(),
-                map: map,
-                icon: 'arrow_30.png'
-            });
+            // Create an invisible overlay to access the projection object
+            var overlay = new google.maps.OverlayView();
+            overlay.draw = function() {}; // No need to draw anything
+            overlay.onAdd = function() {};
+            overlay.onRemove = function() {};
         }
 
         const adjustMap = function (mode, amount) {
@@ -35,6 +35,28 @@
                     break;
                 }
         };
+
+        function interpolateGpsCoordinates(points, targetLength) {
+          const interpolatedPoints = [];
+          const totalOriginalPoints = points.length;
+          const intervals = targetLength / (totalOriginalPoints - 1);
+
+          for (let i = 0; i < totalOriginalPoints - 1; i++) {
+              const start = points[i];
+              const end = points[i + 1];
+
+              for (let j = 0; j < intervals; j++) {
+                  const lat = start.lat + (end.lat - start.lat) * (j / intervals);
+                  const lng = start.lng + (end.lng - start.lng) * (j / intervals);
+                  interpolatedPoints.push({ lat, lng });
+              }
+          }
+
+          // Make sure to add the last point of the original array
+          interpolatedPoints.push(points[points.length - 1]);
+
+          return interpolatedPoints;
+        }
 
         function animateCamera(time) {
             // Update the heading, leave everything else as-is.
@@ -69,14 +91,175 @@
         width: 400px;
         height: 400px;
       }
+      #fps-counter {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        color: white;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 5px;
+        border-radius: 5px;
+        font-family: Arial, sans-serif;
+        z-index: 1;
+    }
     </style>
   </head>
   <body>
+    <div id="fps-counter">FPS: 0</div>
     <div id="maps-container">
         <div id="map"></div>
     </div>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=XXX&callback=initMap&v=beta" defer></script>
+    <script type="text/javascript">
+      // FPS Counter
+      let fpsCounter = document.getElementById('fps-counter');
+      let frameTimes = [];
+      let lastFrameTimestamp = performance.now();
+
+      function updateFPS() {
+          let now = performance.now();
+          let delta = now - lastFrameTimestamp;
+          lastFrameTimestamp = now;
+          
+          // Keep the last 100 frame times to average
+          frameTimes.push(1000 / delta);
+          if (frameTimes.length > 100) {
+              frameTimes.shift();
+          }
+
+          let meanFPS = frameTimes.reduce((a, b) => a + b) / frameTimes.length;
+          fpsCounter.textContent = `FPS: ${Math.round(meanFPS)}`;
+
+          requestAnimationFrame(updateFPS);
+      }
+
+      requestAnimationFrame(updateFPS);
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=XXX&callback=initMap&v=beta"></script>
+    <script src="polyline.js"></script>
+
+    <script type="text/javascript">
+      // Polyline from backend, see decode-route.py
+      //let routePolyline = "qiuuGsgh{CLmDb@FVLf@b@ZPtAb@`Bd@VTt@H\BFs@@IDMJClDj@PBR@hKhCHs@rCt@fG|AzBb@fAXTFHATSNo@F]HBd@LUfBBJtMrDJAJEFIHQHn@n@J@HjDuAdCeALp@N@fBbF~DjL^t@`BjC~@tBDXTb@@JLp@XKVIFNDHFEL?NH\\LPTh@x@lAh@t@lBbCTPLLjAxBZj@f@xAx@`Dj@zBfBhHVdAXzAb@lDX`AV|AVdCSJfBq@zAoAZo@`@aA}@{AiAwB{A}D\[z@w@~@_A|@u@`AcAtAbDJmAAy@]qCOaA{@oDIa@Ea@BWFEZDzAdBhCbDfCfD`AnAXVJ?HKBe@@o@DARTR`@SmB?EBCD?DBd@jAFDF@B?@C?KAAEYe@oAAI?GDMD?FBDHl@nBDDF@@E@Om@sBUy@?KHEFBp@lABBFA@EY{AuAkCAKBCJJV^Xb@Vn@f@v@@ACUq@}A@EPJLPJL?AAKQe@]s@CQRH`@\LZHHDJf@tAj@zAHf@b@jBF@A}@{@eEDIPTZf@n@dCLNBOQgAWuA@GDBXn@^h@d@x@RVAXFX?j@JbAV~AW_BKcA?k@GY@YSWe@y@_@i@Yo@CCA?AFVtAPfACNMOo@eC[g@QUEHz@dE@|@GAc@kBIg@k@{Ag@uAEKIIM[OIQSSIBP\r@Pd@@J?@KMMQQKADp@|ABTA@g@w@Wo@Yc@W_@KKCB@JtAjCXzAADG@CCq@mAGCID?JTx@l@rBANADGAEEm@oBEIGCE?EL@Pd@nADX@@?JABKAGEe@kAECE?CB?DRlBSa@KQGCE@An@Cd@IJK?YWaAoAgCgDiCcD{AeB[EGDCVNbAz@nDN`A\pC@x@KlAw@mB";
+      let routePolylineBase64 = "cWl1dUdzZ2h7Q0xtRGJARlZMZkBiQFpQdEFiQGBCZEBWVHRASFxCRnNAQElETUpDbERqQFBCUkBoS2hDSHNAckN0QGZHfEF6QmJAZkFYVEZIQVRTTm9ARl1IQmRATFVmQkJKdE1yREpBSkVGSUhRSG5AbkBKQEhqRHVBZENlQUxwQE5AZkJiRn5EakxedEBgQmpDfkB0QkRYVGJAQEpMcEBYS1ZJRk5ESEZFTD9OSFxcTFBUaEB4QGxBaEB0QGxCYkNUUExMakF4QlpqQGZAeEF4QGBEakB6QmZCaEhWZEFYekFiQGxEWGBBVnxBVmRDU0pmQnFAekFvQVpvQGBAYUF9QHtBaUF3QntBfURcW3pAd0B+QF9BfEB1QGBBY0F0QWJESm1BQXlAXXFDT2FBe0BvRElhQEVhQEJXRkVaRHpBZEJoQ2JEZkNmRGBBbkFYVko/SEtCZUBAb0BEQVJUUmBAU21CP0VCQ0Q/REJkQGpBRkRGQEI/QEM/S0FBRVllQG9BQUk/R0RNRD9GQkRIbEBuQkRERkBARUBPbUBzQlV5QD9LSEVGQnBAbEFCQkZBQEVZe0F1QWtDQUtCQ0pKVl5YYkBWbkBmQHZAQEFDVXFAfUFARVBKTFBKTD9BQUtRZUBdc0BDUVJIYEBcTFpISERKZkB0QWpAekFIZkBiQGpCRkBBfUB7QGVFRElQVFpmQG5AZENMTkJPUWdBV3VBQEdEQlhuQF5oQGRAeEBSVkFYRlg/akBKYkFWfkFXX0JLY0E/a0BHWUBZU1dlQHlAX0BpQFlvQENDQT9BRlZ0QVBmQUNOTU9vQGVDW2dAUVVFSHpAZEVAfEBHQWNAa0JJZ0BrQHtBZ0B1QUVLSUlNW09JUVNTSUJQXHJAUGRAQEo/QEtNTVFRS0FEcEB8QUJUQUBnQHdAV29AWWNAV19AS0tDQkBKdEFqQ1h6QUFER0BDQ3FAbUFHQ0lEP0pUeEBsQHJCQU5BREdBRUVtQG9CRUlHQ0U/RUxAUGRAbkFEWEBAP0pBQktBR0VlQGtBRUNFP0NCP0RSbEJTYUBLUUdDRUBBbkBDZEBJSks/WVdhQW9BZ0NnRGlDY0R7QWVCW0VHRENWTmJBekBuRE5gQVxwQ0B4QEtsQXdAbUI=";
+      
+      let decodedPolyline = polyline.decode(atob(routePolylineBase64), 5);
+
+      //console.log(decodedPolyline);
+
+      //var coordinates = L.Polyline.fromEncoded(routePolyline.replace(/\\/g, '\\\\')).getLatLngs();
+      //console.log(coordinates);
+
+      //var coordinates = L.polyline(L.PolylineUtil.decode(routePolyline.replace(/\\/g, '\\\\'), 5)).getLatLngs();
+      //console.log(coordinates);
+
+      //let decodedPolyline = decode(atob(routePolylineBase64), 1e5);
+      //console.log(decodedPolyline);
+
+      // Google needs named objects
+      let latLngPolyline = decodedPolyline.map(function(coord) {
+        return { lat: coord[0], lng: coord[1] };
+      });
+
+      let myPolyline = new google.maps.Polyline({
+          path: latLngPolyline,
+          geodesic: true,
+          strokeColor: '#0031FF',
+          strokeOpacity: 1.0,
+          strokeWeight: 12
+      });
+
+      myPolyline.setMap(map);
+
+      const startPosition = new google.maps.LatLng(45.66185,25.6065);
+
+      myMarker = new google.maps.Marker({
+          position: startPosition,
+          map: map,
+          icon: 'arrow_30.png'
+      });
+
+      // Center the map slightly at the bottom
+      let newVerticalCenter = startPosition.lng() + 0.0007;
+      map.setCenter(new google.maps.LatLng(startPosition.lat(), newVerticalCenter));
+
+      /*
+
+      // Add a listener for when the map is idle (fully loaded and rendered)
+      google.maps.event.addListenerOnce(map, 'idle', function() {
+          overlay.setMap(map);
+          adjustMapCenter(map, myMarker, overlay);
+      });
+
+      function adjustMapCenter(map, marker, overlay) {
+          // Ensure the overlay is ready
+          if (!overlay.getProjection()) {
+              console.log("Projection is not ready yet.");
+              return;
+          }
+
+          var proj = overlay.getProjection();
+          var markerPoint = proj.fromLatLngToDivPixel(marker.getPosition());
+
+          // Calculate the new center, adjusting to keep the marker in the lower third of the map
+          var mapHeight = map.getDiv().clientHeight;
+          var newPointY = markerPoint.y - (2 * mapHeight / 3);
+
+          var newCenterPoint = new google.maps.Point(markerPoint.x, newPointY);
+          var newCenterLatLng = proj.fromDivPixelToLatLng(newCenterPoint);
+
+          // Update the map center
+          map.setCenter(newCenterLatLng);
+      }
+      */
+
+      function adjustMapCenterWithHeading(map, startPosition, heading, offset) {
+          // Convert heading to radians
+          let headingRadians = heading * (Math.PI / 180);
+
+          // Calculate offsets based on heading
+          let latOffset = offset * Math.cos(headingRadians); // Latitude offset
+          let lngOffset = offset * Math.sin(headingRadians); // Longitude offset
+
+          // Calculate new center coordinates
+          let newLat = startPosition.lat + latOffset;
+          let newLng = startPosition.lng + lngOffset;
+
+          // Set the new center of the map
+          map.setCenter(new google.maps.LatLng(newLat, newLng));
+      }
+
+      // Driving simulation
+      // First, interpolate route to make it more granular
+      const simulatedRoute = interpolateGpsCoordinates(latLngPolyline, 15000);
+
+      // Now move forward in defined interval
+      let step = 0;
+      const timeInterval = 100; // Duration in milliseconds between each step
+
+      // Function to move the marker
+      function moveMarker() {
+          if (step < simulatedRoute.length - 1) {
+              var currentPos = simulatedRoute[step];
+              var nextPos = simulatedRoute[step + 1];
+              var heading = google.maps.geometry.spherical.computeHeading(currentPos, nextPos);
+
+              map.setHeading(heading);
+              //map.setCenter(currentPos);
+              myMarker.setPosition(currentPos);
+
+              adjustMapCenterWithHeading(map, currentPos, heading, 0.0005);
+
+              step++;
+          } else {
+              clearInterval(interval); // Stop the simulation once the end of the array is reached
+          }
+      }
+
+      // Start the simulation
+      var interval = setInterval(moveMarker, timeInterval);
+    </script>
 
   </body>
 

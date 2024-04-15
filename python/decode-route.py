@@ -1,4 +1,5 @@
 import re
+import base64
 import requests
 from dotenv import load_dotenv
 import googlemaps
@@ -39,3 +40,9 @@ directions_result = gmaps.directions(str(gps_coordinates_reversed[0]).replace("(
 
 print("Polyline of route is as follows. Verify it e.g. via https://valhalla.github.io/demos/polyline/.")
 print(directions_result[0]["overview_polyline"]["points"])
+
+print("Base64 encoding")
+message_bytes = directions_result[0]["overview_polyline"]["points"].encode('ascii')
+base64_bytes = base64.b64encode(message_bytes)
+
+print(base64_bytes)

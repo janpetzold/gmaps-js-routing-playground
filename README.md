@@ -12,4 +12,7 @@ URL: https://maps.app.goo.gl/5t2vbyiqKXTZQoM69
 
 For decoding & polyline genration see `python`.
 
-For web frontend see `web`.
+For web frontend see `web`. Run this locally via
+
+    cd web
+    http-server -p 8080
