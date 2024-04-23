@@ -8,12 +8,12 @@
 
         function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 19,
+                zoom: 19.5,
                 center: { lat: 45.66181182861328, lng: 25.60649299621582 },
                 heading: 95,
-                tilt: 70,
                 disableDefaultUI: true,
-                mapId: "7a3305cc7db13890"
+                mapId: "7a3305cc7db13890",
+                isFractionalZoomEnabled: true
             });
 
             // Create an invisible overlay to access the projection object
@@ -88,13 +88,29 @@
         padding: 0;
       }
       #maps-container {
-        width: 400px;
-        height: 400px;
+        width: 800px;
+        height: 480px;
+      }
+      #instructions {
+        position: fixed;
+        opacity: 0.8;
+        text-align: center;
+        border-radius: 5px;
+        top: 10px;
+        left: 20px;
+        width: 760px;
+        height: 60px;
+        padding: 5px;
+        background-color: turquoise;
+        font-size: 26px;
+        font-weight: bold;
+        font-family: Arial, sans-serif;
+        z-index: 1;
       }
       #fps-counter {
         position: fixed;
-        top: 10px;
-        left: 10px;
+        top: 440px;
+        left: 720px;
         color: white;
         background: rgba(0, 0, 0, 0.7);
         padding: 5px;
@@ -105,6 +121,9 @@
     </style>
   </head>
   <body>
+    <div id="instructions">
+        <span id="instruction-text">Start your engine</p>
+    </div>
     <div id="fps-counter">FPS: 0</div>
     <div id="maps-container">
         <div id="map"></div>
@@ -140,22 +159,14 @@
     <script src="polyline.js"></script>
 
     <script type="text/javascript">
+      // Route instructions from backend, see decode-route.py
+      const instructionsBase64 = "W3sic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY2MTg0NTMsICJsbmciOiAyNS42MDY1MDN9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NjE2ODkxLCAibG5nIjogMjUuNjA3ODkxOH0sICJodG1sX2luc3RydWN0aW9ucyI6ICJIZWFkIDxiPmVhc3Q8L2I+IG9uIDxiPlN0cmFkYSBDb2RydWwgQ29zbWludWx1aTwvYj4gdG93YXJkIDxiPlN0cmFkYSAxMyBEZWNlbWJyaWU8L2I+Lzx3YnIvPjxiPkRKMTAzPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NjE2ODkxLCAibG5nIjogMjUuNjA3ODkxOH0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY1OTk5MTQsICJsbmciOiAyNS42MDcwODIzfSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIlR1cm4gPGI+cmlnaHQ8L2I+IG9udG8gPGI+U3RyYWRhIDEzIERlY2VtYnJpZTwvYj4vPHdici8+PGI+REoxMDM8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY1OTk5MTQsICJsbmciOiAyNS42MDcwODIzfSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjUzMjkzNSwgImxuZyI6IDI1LjYwNDY4NDd9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiQXQgdGhlIHJvdW5kYWJvdXQsIHRha2UgdGhlIDxiPjJuZDwvYj4gZXhpdCBhbmQgc3RheSBvbiA8Yj5TdHJhZGEgMTMgRGVjZW1icmllPC9iPi88d2JyLz48Yj5ESjEwMzwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjUzMjkzNSwgImxuZyI6IDI1LjYwNDY4NDd9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NTA3MDIsICJsbmciOiAyNS42MDM5NTAyfSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIkF0IHRoZSByb3VuZGFib3V0LCB0YWtlIHRoZSA8Yj4ybmQ8L2I+IGV4aXQgb250byA8Yj5TdHJhZGEgMTMgRGVjZW1icmllPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NTA3MDIsICJsbmciOiAyNS42MDM5NTAyfSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQ5OTgzNSwgImxuZyI6IDI1LjYwMzI3NjF9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiU2xpZ2h0IDxiPnJpZ2h0PC9iPiB0b3dhcmQgPGI+U3RyYWRhIEl1bGl1IE1hbml1PC9iPi88d2JyLz48Yj5ETjFFPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDk5ODM1LCAibG5nIjogMjUuNjAzMjc2MX0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0NjYzMDU5OTk5OTk5LCAibG5nIjogMjUuNTk3MjE4OX0sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPnJpZ2h0PC9iPiBvbnRvIDxiPlN0cmFkYSBJdWxpdSBNYW5pdTwvYj4vPHdici8+PGI+RE4xRTwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQ2NjMwNTk5OTk5OTksICJsbmciOiAyNS41OTcyMTg5fSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQ2OTg0NiwgImxuZyI6IDI1LjU4OTI4NjV9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiU2xpZ2h0IDxiPnJpZ2h0PC9iPiB0byBzdGF5IG9uIDxiPlN0cmFkYSBJdWxpdSBNYW5pdTwvYj4vPHdici8+PGI+RE4xRTwvYj48ZGl2IHN0eWxlPVwiZm9udC1zaXplOjAuOWVtXCI+Q29udGludWUgdG8gZm9sbG93IEROMUU8L2Rpdj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQ2OTg0NiwgImxuZyI6IDI1LjU4OTI4NjV9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDU4MjYxLCAibG5nIjogMjUuNTg5NjM0fSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIlR1cm4gPGI+bGVmdDwvYj4gb250byA8Yj5TdHJhZGEgTHVuZ1x1MDEwMzwvYj4vPHdici8+PGI+RE4xRTwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQ1ODI2MSwgImxuZyI6IDI1LjU4OTYzNH0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0Mjg4ODQsICJsbmciOiAyNS41ODg4MDc4fSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIkF0IHRoZSByb3VuZGFib3V0LCB0YWtlIHRoZSA8Yj4ybmQ8L2I+IGV4aXQgb250byA8Yj5TdHJhZGEgTXVyZVx1MDIxOWVuaWxvcjwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQyODg4NCwgImxuZyI6IDI1LjU4ODgwNzh9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDE4NzM5LCAibG5nIjogMjUuNTg4MjExfSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIkNvbnRpbnVlIG9udG8gPGI+UGlhXHUwMjFiYSBTZmF0dWx1aTwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQxODczOSwgImxuZyI6IDI1LjU4ODIxMX0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MDA5NywgImxuZyI6IDI1LjU4NTE1MzN9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiQ29udGludWUgb250byA8Yj5TdHIgR2hlb3JnaGUgQmFyaVx1MDE2M2l1PC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDAwOTcsICJsbmciOiAyNS41ODUxNTMzfSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM5ODExOCwgImxuZyI6IDI1LjU4NTI1NDR9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiQXQgdGhlIHJvdW5kYWJvdXQsIHRha2UgdGhlIDxiPjNyZDwvYj4gZXhpdCJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42Mzk4MTE4LCAibG5nIjogMjUuNTg1MjU0NH0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzODg4ODgsICJsbmciOiAyNS41ODU2MDExfSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIkNvbnRpbnVlIG9udG8gPGI+XHUwMjE4aXJ1bCBMdWR3aWcgdmFuIEJlZXRob3ZlbjwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM4ODg4OCwgImxuZyI6IDI1LjU4NTYwMTF9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDA2MDk2LCAibG5nIjogMjUuNTg5Nzg3Mn0sICJodG1sX2luc3RydWN0aW9ucyI6ICJBdCB0aGUgcm91bmRhYm91dCwgdGFrZSB0aGUgPGI+MXN0PC9iPiBleGl0IG9udG8gPGI+U3RyYWRhIFBvYXJ0YSBTY2hlaTwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQwNjA5NiwgImxuZyI6IDI1LjU4OTc4NzJ9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDEzNTYzLCAibG5nIjogMjUuNTkxMDk5N30sICJodG1sX2luc3RydWN0aW9ucyI6ICJIZWFkIDxiPm5vcnRoZWFzdDwvYj4gb24gPGI+U3RyYWRhIEdyaWdvcmFcdTAyMTkgRGluaWN1PC9iPiB0b3dhcmQgPGI+U3RyYWRhIEpvaGFubiBHXHUwMGY2dHQ8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MTM1NjMsICJsbmciOiAyNS41OTEwOTk3fSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQzNjE2MSwgImxuZyI6IDI1LjU5NzA4MX0sICJodG1sX2luc3RydWN0aW9ucyI6ICI8Yj5TdHJhZGEgR3JpZ29yYVx1MDIxOSBEaW5pY3U8L2I+IHR1cm5zIDxiPnJpZ2h0PC9iPiBhbmQgYmVjb21lcyA8Yj5TdHJhZGEgTmljb2xhZSBCXHUwMTAzbGNlc2N1PC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDM2MTYxLCAibG5nIjogMjUuNTk3MDgxfSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQzMjczNjk5OTk5OTksICJsbmciOiAyNS41OTc1MjQ5fSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIlR1cm4gPGI+cmlnaHQ8L2I+IG9udG8gPGI+U3RyYWRhIENvbnN0YW50aW4gRG9icm9nZWFudS1HaGVyZWE8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MzI3MzY5OTk5OTk5LCAibG5nIjogMjUuNTk3NTI0OX0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzNzA5NzM5OTk5OTk5LCAibG5nIjogMjUuNTg3MjQ0fSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIlR1cm4gPGI+cmlnaHQ8L2I+IG9udG8gPGI+U3RyYWRhIENhc3RlbHVsdWk8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzNzA5NzM5OTk5OTk5LCAibG5nIjogMjUuNTg3MjQ0fSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM1Nzg3MDk5OTk5OTksICJsbmciOiAyNS41ODgwODAzfSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIlR1cm4gPGI+bGVmdDwvYj4gb250byA8Yj5cdTAyMThpcnVsIFBsXHUwMTAzaWVcdTAyMTlpbG9yPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42MzU3ODcwOTk5OTk5OSwgImxuZyI6IDI1LjU4ODA4MDN9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42MzYyNjI5LCAibG5nIjogMjUuNTg5MjUxMX0sICJodG1sX2luc3RydWN0aW9ucyI6ICJTaGFycCA8Yj5sZWZ0PC9iPiBvbnRvIDxiPlN0cmFkYSBQZXRcdTAxNTFmaSBTXHUwMGUxbmRvcjwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM2MjYyOSwgImxuZyI6IDI1LjU4OTI1MTF9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42MzYzMjM4LCAibG5nIjogMjUuNTg5MjY1M30sICJodG1sX2luc3RydWN0aW9ucyI6ICJIZWFkIDxiPm5vcnRoPC9iPiB0b3dhcmQgPGI+U3RyYWRhIFBldFx1MDE1MWZpIFNcdTAwZTFuZG9yPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42MzYzMjM4LCAibG5nIjogMjUuNTg5MjY1M30sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzNTc4NzA5OTk5OTk5LCAibG5nIjogMjUuNTg4MDgwM30sICJodG1sX2luc3RydWN0aW9ucyI6ICJDb250aW51ZSBvbnRvIDxiPlN0cmFkYSBQZXRcdTAxNTFmaSBTXHUwMGUxbmRvcjwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM1Nzg3MDk5OTk5OTksICJsbmciOiAyNS41ODgwODAzfSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM1NzUwMiwgImxuZyI6IDI1LjU4ODA1OTJ9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiVHVybiA8Yj5sZWZ0PC9iPiBvbnRvIDxiPlx1MDIxOGlydWwgUGxcdTAxMDNpZVx1MDIxOWlsb3I8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzNTc1MDIsICJsbmciOiAyNS41ODgwNTkyfSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM2NDg2LCAibG5nIjogMjUuNTg3OTE0Nn0sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPnJpZ2h0PC9iPiB0byBzdGF5IG9uIDxiPlx1MDIxOGlydWwgUGxcdTAxMDNpZVx1MDIxOWlsb3I8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzNjQ4NiwgImxuZyI6IDI1LjU4NzkxNDZ9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42MzcwOTczOTk5OTk5OSwgImxuZyI6IDI1LjU4NzI0NH0sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPmxlZnQ8L2I+IHRvIHN0YXkgb24gPGI+XHUwMjE4aXJ1bCBQbFx1MDEwM2llXHUwMjE5aWxvcjwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM3MDk3Mzk5OTk5OTksICJsbmciOiAyNS41ODcyNDR9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42MzY4NDc2LCAibG5nIjogMjUuNTg2ODU2Nn0sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPmxlZnQ8L2I+IG9udG8gPGI+U3RyYWRhIENhc3RlbHVsdWk8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzNjg0NzYsICJsbmciOiAyNS41ODY4NTY2fSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM4Nzk2NCwgImxuZyI6IDI1LjU4NTcxNjl9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiVHVybiA8Yj5yaWdodDwvYj4gb250byA8Yj5TdHJhZGEgRG9jdG9yIEdoZW9yZ2hlIEJhaXVsZXNjdTwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM4Nzk2NCwgImxuZyI6IDI1LjU4NTcxNjl9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDA2MDk2LCAibG5nIjogMjUuNTg5Nzg3Mn0sICJodG1sX2luc3RydWN0aW9ucyI6ICJBdCB0aGUgcm91bmRhYm91dCwgY29udGludWUgc3RyYWlnaHQgb250byA8Yj5TdHJhZGEgUG9hcnRhIFNjaGVpPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDA2MDk2LCAibG5nIjogMjUuNTg5Nzg3Mn0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MTM1NjMsICJsbmciOiAyNS41OTEwOTk3fSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIkNvbnRpbnVlIG9udG8gPGI+U3RyYWRhIEdyaWdvcmFcdTAyMTkgRGluaWN1PC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDEzNTYzLCAibG5nIjogMjUuNTkxMDk5N30sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MzYxNjEsICJsbmciOiAyNS41OTcwODF9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiPGI+U3RyYWRhIEdyaWdvcmFcdTAyMTkgRGluaWN1PC9iPiB0dXJucyA8Yj5yaWdodDwvYj4gYW5kIGJlY29tZXMgPGI+U3RyYWRhIE5pY29sYWUgQlx1MDEwM2xjZXNjdTwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQzNjE2MSwgImxuZyI6IDI1LjU5NzA4MX0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MzI3MzY5OTk5OTk5LCAibG5nIjogMjUuNTk3NTI0OX0sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPnJpZ2h0PC9iPiBvbnRvIDxiPlN0cmFkYSBDb25zdGFudGluIERvYnJvZ2VhbnUtR2hlcmVhPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDMyNzM2OTk5OTk5OSwgImxuZyI6IDI1LjU5NzUyNDl9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDEwMDM4LCAibG5nIjogMjUuNTkyNzQyOH0sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPnJpZ2h0PC9iPiBvbnRvIDxiPlN0cmFkYSBDYXN0ZWx1bHVpPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDEwMDM4LCAibG5nIjogMjUuNTkyNzQyOH0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MDIyNiwgImxuZyI6IDI1LjU5MzQ3N30sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPmxlZnQ8L2I+IG9udG8gPGI+U3RyYWRhIFN1aVx1MDIxOXVsIENhc3RlbHVsdWk8L2I+In1d";
+      const decodedInstructions = JSON.parse(atob(instructionsBase64));
+      console.log(decodedInstructions);
+
       // Polyline from backend, see decode-route.py
-      //let routePolyline = "qiuuGsgh{CLmDb@FVLf@b@ZPtAb@`Bd@VTt@H\BFs@@IDMJClDj@PBR@hKhCHs@rCt@fG|AzBb@fAXTFHATSNo@F]HBd@LUfBBJtMrDJAJEFIHQHn@n@J@HjDuAdCeALp@N@fBbF~DjL^t@`BjC~@tBDXTb@@JLp@XKVIFNDHFEL?NH\\LPTh@x@lAh@t@lBbCTPLLjAxBZj@f@xAx@`Dj@zBfBhHVdAXzAb@lDX`AV|AVdCSJfBq@zAoAZo@`@aA}@{AiAwB{A}D\[z@w@~@_A|@u@`AcAtAbDJmAAy@]qCOaA{@oDIa@Ea@BWFEZDzAdBhCbDfCfD`AnAXVJ?HKBe@@o@DARTR`@SmB?EBCD?DBd@jAFDF@B?@C?KAAEYe@oAAI?GDMD?FBDHl@nBDDF@@E@Om@sBUy@?KHEFBp@lABBFA@EY{AuAkCAKBCJJV^Xb@Vn@f@v@@ACUq@}A@EPJLPJL?AAKQe@]s@CQRH`@\LZHHDJf@tAj@zAHf@b@jBF@A}@{@eEDIPTZf@n@dCLNBOQgAWuA@GDBXn@^h@d@x@RVAXFX?j@JbAV~AW_BKcA?k@GY@YSWe@y@_@i@Yo@CCA?AFVtAPfACNMOo@eC[g@QUEHz@dE@|@GAc@kBIg@k@{Ag@uAEKIIM[OIQSSIBP\r@Pd@@J?@KMMQQKADp@|ABTA@g@w@Wo@Yc@W_@KKCB@JtAjCXzAADG@CCq@mAGCID?JTx@l@rBANADGAEEm@oBEIGCE?EL@Pd@nADX@@?JABKAGEe@kAECE?CB?DRlBSa@KQGCE@An@Cd@IJK?YWaAoAgCgDiCcD{AeB[EGDCVNbAz@nDN`A\pC@x@KlAw@mB";
-      let routePolylineBase64 = "cWl1dUdzZ2h7Q0xtRGJARlZMZkBiQFpQdEFiQGBCZEBWVHRASFxCRnNAQElETUpDbERqQFBCUkBoS2hDSHNAckN0QGZHfEF6QmJAZkFYVEZIQVRTTm9ARl1IQmRATFVmQkJKdE1yREpBSkVGSUhRSG5AbkBKQEhqRHVBZENlQUxwQE5AZkJiRn5EakxedEBgQmpDfkB0QkRYVGJAQEpMcEBYS1ZJRk5ESEZFTD9OSFxcTFBUaEB4QGxBaEB0QGxCYkNUUExMakF4QlpqQGZAeEF4QGBEakB6QmZCaEhWZEFYekFiQGxEWGBBVnxBVmRDU0pmQnFAekFvQVpvQGBAYUF9QHtBaUF3QntBfURcW3pAd0B+QF9BfEB1QGBBY0F0QWJESm1BQXlAXXFDT2FBe0BvRElhQEVhQEJXRkVaRHpBZEJoQ2JEZkNmRGBBbkFYVko/SEtCZUBAb0BEQVJUUmBAU21CP0VCQ0Q/REJkQGpBRkRGQEI/QEM/S0FBRVllQG9BQUk/R0RNRD9GQkRIbEBuQkRERkBARUBPbUBzQlV5QD9LSEVGQnBAbEFCQkZBQEVZe0F1QWtDQUtCQ0pKVl5YYkBWbkBmQHZAQEFDVXFAfUFARVBKTFBKTD9BQUtRZUBdc0BDUVJIYEBcTFpISERKZkB0QWpAekFIZkBiQGpCRkBBfUB7QGVFRElQVFpmQG5AZENMTkJPUWdBV3VBQEdEQlhuQF5oQGRAeEBSVkFYRlg/akBKYkFWfkFXX0JLY0E/a0BHWUBZU1dlQHlAX0BpQFlvQENDQT9BRlZ0QVBmQUNOTU9vQGVDW2dAUVVFSHpAZEVAfEBHQWNAa0JJZ0BrQHtBZ0B1QUVLSUlNW09JUVNTSUJQXHJAUGRAQEo/QEtNTVFRS0FEcEB8QUJUQUBnQHdAV29AWWNAV19AS0tDQkBKdEFqQ1h6QUFER0BDQ3FAbUFHQ0lEP0pUeEBsQHJCQU5BREdBRUVtQG9CRUlHQ0U/RUxAUGRAbkFEWEBAP0pBQktBR0VlQGtBRUNFP0NCP0RSbEJTYUBLUUdDRUBBbkBDZEBJSks/WVdhQW9BZ0NnRGlDY0R7QWVCW0VHRENWTmJBekBuRE5gQVxwQ0B4QEtsQXdAbUI=";
-      
-      let decodedPolyline = polyline.decode(atob(routePolylineBase64), 5);
-
-      //console.log(decodedPolyline);
-
-      //var coordinates = L.Polyline.fromEncoded(routePolyline.replace(/\\/g, '\\\\')).getLatLngs();
-      //console.log(coordinates);
-
-      //var coordinates = L.polyline(L.PolylineUtil.decode(routePolyline.replace(/\\/g, '\\\\'), 5)).getLatLngs();
-      //console.log(coordinates);
-
-      //let decodedPolyline = decode(atob(routePolylineBase64), 1e5);
-      //console.log(decodedPolyline);
+      const routePolylineBase64 = "cWl1dUdzZ2h7Q1B7RUZlQERTekBWakFcakJ6QH5BcEBARkRITEpKRExBSkdCRVZDZEV0QFJAZE5mRH5HYkJ0QV5mQExkQFhSTGZAUFBKUFRCSkZKSEZKQEpDSEdCRVJFdkBMfkFeWkRYQ05GckRgQWJATEZOaEB0QGZBekBORERBTmBBbkJ+S2pAdkNUdkFeckJUcEBYZEBSTFZIakFGeEBOUEhgQFZWVnJBZEJ4QGxBSmRARFxoQHpJP3ZBQ3ZAb0F+UGVAZkhJfEJAWmJATXpDY0FWRFBMSExMRkxBTklER3ZAT2ZCWGpASnBEaEF0RHBBaEJ4QHhAZkB8QH5AYkF0QWpAaEFkQWRDbEBiQnxAbkNATj9MREhIQkZDRlFYX0BuQ2FBaEBDQD9CQUJDQkVAT0NPR0dLQUNCX0NlSGdBY0RxQWNFc0BlQ21Ae0NPYUBRUXdAa0BNSVN9QWdAaURXZ0FfQWtEbUJ9SHtAd0NtQntESU9NTUhLekBrQWpBYEJOTnBAdkBKUlhsQFpyQXpAdERgQWZFWmBBbkBiQmpAdkF6QnRGckNgRmpBYEJ+QXZBekBwQHxBekJ6QGRBYkFmQnRAfEFyQnlCSmNAUmFBRENGQWJCfEBpQnNFQUlAT0pCS0NBTkBIWnZAbEF6Q0ZCP3BAQ1hFTGlDe0BhQGhAd0F6QXBAakFxR3REeUFqQU1VS0k/R0FHR0lLQUNAU2dAZUFnRG9Cd0ZlQ2lJbUB7Q09hQFFRd0BrQE1JU31BZ0BpRFdnQV9Ba0RtQn1Ie0B3Q2FAe0B1QW9DTU1IS3pAa0FqQWBCTk5wQHZASlJYbEBackF6QHREYEFmRVpgQW5AYkJqQHZBdkJvQmBAY0A=";
+      const decodedPolyline = polyline.decode(atob(routePolylineBase64), 5);
 
       // Google needs named objects
       let latLngPolyline = decodedPolyline.map(function(coord) {
@@ -166,8 +177,8 @@
           path: latLngPolyline,
           geodesic: true,
           strokeColor: '#0031FF',
-          strokeOpacity: 1.0,
-          strokeWeight: 12
+          strokeOpacity: 0.5,
+          strokeWeight: 6
       });
 
       myPolyline.setMap(map);
@@ -177,42 +188,12 @@
       myMarker = new google.maps.Marker({
           position: startPosition,
           map: map,
-          icon: 'arrow_30.png'
+          icon: 'arrow_shadow.png'
       });
 
       // Center the map slightly at the bottom
-      let newVerticalCenter = startPosition.lng() + 0.0007;
+      let newVerticalCenter = startPosition.lng() + 0.0003;
       map.setCenter(new google.maps.LatLng(startPosition.lat(), newVerticalCenter));
-
-      /*
-
-      // Add a listener for when the map is idle (fully loaded and rendered)
-      google.maps.event.addListenerOnce(map, 'idle', function() {
-          overlay.setMap(map);
-          adjustMapCenter(map, myMarker, overlay);
-      });
-
-      function adjustMapCenter(map, marker, overlay) {
-          // Ensure the overlay is ready
-          if (!overlay.getProjection()) {
-              console.log("Projection is not ready yet.");
-              return;
-          }
-
-          var proj = overlay.getProjection();
-          var markerPoint = proj.fromLatLngToDivPixel(marker.getPosition());
-
-          // Calculate the new center, adjusting to keep the marker in the lower third of the map
-          var mapHeight = map.getDiv().clientHeight;
-          var newPointY = markerPoint.y - (2 * mapHeight / 3);
-
-          var newCenterPoint = new google.maps.Point(markerPoint.x, newPointY);
-          var newCenterLatLng = proj.fromDivPixelToLatLng(newCenterPoint);
-
-          // Update the map center
-          map.setCenter(newCenterLatLng);
-      }
-      */
 
       function adjustMapCenterWithHeading(map, startPosition, heading, offset) {
           // Convert heading to radians
@@ -228,6 +209,69 @@
 
           // Set the new center of the map
           map.setCenter(new google.maps.LatLng(newLat, newLng));
+      }
+
+      function isWithinLegBounds(position, start, end) {
+        return position.lat >= Math.min(start.lat, end.lat) &&
+               position.lat <= Math.max(start.lat, end.lat) &&
+               position.lng >= Math.min(start.lng, end.lng);
+      }
+
+      function haversineDistance(coords1, coords2, isMiles = false) {
+        function toRad(x) {
+            return x * Math.PI / 180;
+        }
+
+        var R = 6371; // Earth radius in km
+        var dLat = toRad(coords2.lat - coords1.lat);
+        var dLon = toRad(coords2.lng - coords1.lng);
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(coords1.lat)) * Math.cos(toRad(coords2.lat)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        var distance = R * c;
+
+        return isMiles ? distance * 0.621371 : distance;
+      
+      }
+
+      function findClosestLeg(position, routeDetails) {
+        let closestLeg = null;
+        let smallestDistance = Number.MAX_VALUE;
+
+        routeDetails.forEach(leg => {
+            // Calculate distance to the end point of the leg
+            const distanceToStart = haversineDistance(position, leg.start_location);
+
+            // Update closest leg if this leg's end is closer
+            if (distanceToStart < smallestDistance) {
+                smallestDistance = distanceToStart;
+                closestLeg = leg;
+            }
+        });
+
+        return closestLeg;
+      }
+
+      //let currentInstruction = 0;
+      //document.getElementById("instruction-text").innerHTML = decodedInstructions[currentInstruction].html_instructions;
+
+      // Update instruction for routing
+      function updateInstruction(position) {
+        for (let i = 0; i < decodedInstructions.length; i++) {
+            const leg = decodedInstructions[i];
+            const start = leg.start_location;
+            const end = leg.end_location;
+
+            // Check if within bounds of start and end
+            if (isWithinLegBounds(position, start, end)) {
+                if (currentInstruction !== i) {
+                    currentInstruction = i;
+                    document.getElementById("instruction-text").innerHTML = leg.html_instructions;
+                }
+                break;
+            }
+        }
       }
 
       // Driving simulation
@@ -249,7 +293,13 @@
               //map.setCenter(currentPos);
               myMarker.setPosition(currentPos);
 
-              adjustMapCenterWithHeading(map, currentPos, heading, 0.0005);
+              // Update navigation instruction for the next turn
+              //updateInstruction(currentPos);
+              let closestLeg = findClosestLeg(currentPos, decodedInstructions);
+              document.getElementById("instruction-text").innerHTML = closestLeg.html_instructions;
+
+              // Position the map so it points "north" all the time
+              adjustMapCenterWithHeading(map, currentPos, heading, 0.0003);
 
               step++;
           } else {
