@@ -8,67 +8,14 @@
 
         function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 19.5,
+                zoom: 19,
                 center: { lat: 45.66181182861328, lng: 25.60649299621582 },
-                heading: 95,
+                // heading does not work on Pi unfortunately
+                //heading: 95,
                 disableDefaultUI: true,
                 mapId: "7a3305cc7db13890",
-                isFractionalZoomEnabled: true
             });
-
-            // Create an invisible overlay to access the projection object
-            var overlay = new google.maps.OverlayView();
-            overlay.draw = function() {}; // No need to draw anything
-            overlay.onAdd = function() {};
-            overlay.onRemove = function() {};
         }
-
-        const adjustMap = function (mode, amount) {
-            switch (mode) {
-                case "tilt":
-                    map.setTilt(map.getTilt() + amount);
-                    break;
-                case "rotate":
-                    map.setHeading(map.getHeading() + amount);
-                    break;
-                default:
-                    break;
-                }
-        };
-
-        function interpolateGpsCoordinates(points, targetLength) {
-          const interpolatedPoints = [];
-          const totalOriginalPoints = points.length;
-          const intervals = targetLength / (totalOriginalPoints - 1);
-
-          for (let i = 0; i < totalOriginalPoints - 1; i++) {
-              const start = points[i];
-              const end = points[i + 1];
-
-              for (let j = 0; j < intervals; j++) {
-                  const lat = start.lat + (end.lat - start.lat) * (j / intervals);
-                  const lng = start.lng + (end.lng - start.lng) * (j / intervals);
-                  interpolatedPoints.push({ lat, lng });
-              }
-          }
-
-          // Make sure to add the last point of the original array
-          interpolatedPoints.push(points[points.length - 1]);
-
-          return interpolatedPoints;
-        }
-
-        function animateCamera(time) {
-            // Update the heading, leave everything else as-is.
-            map.moveCamera({
-                heading: (time / 1000) * 3
-            });
-
-            requestAnimationFrame(animateCamera);
-        }
-
-        // test animation
-        //requestAnimationFrame(animateCamera);
 
         window.initMap = initMap;
     </script>
@@ -162,7 +109,7 @@
       // Route instructions from backend, see decode-route.py
       const instructionsBase64 = "W3sic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY2MTg0NTMsICJsbmciOiAyNS42MDY1MDN9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NjE2ODkxLCAibG5nIjogMjUuNjA3ODkxOH0sICJodG1sX2luc3RydWN0aW9ucyI6ICJIZWFkIDxiPmVhc3Q8L2I+IG9uIDxiPlN0cmFkYSBDb2RydWwgQ29zbWludWx1aTwvYj4gdG93YXJkIDxiPlN0cmFkYSAxMyBEZWNlbWJyaWU8L2I+Lzx3YnIvPjxiPkRKMTAzPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NjE2ODkxLCAibG5nIjogMjUuNjA3ODkxOH0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY1OTk5MTQsICJsbmciOiAyNS42MDcwODIzfSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIlR1cm4gPGI+cmlnaHQ8L2I+IG9udG8gPGI+U3RyYWRhIDEzIERlY2VtYnJpZTwvYj4vPHdici8+PGI+REoxMDM8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY1OTk5MTQsICJsbmciOiAyNS42MDcwODIzfSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjUzMjkzNSwgImxuZyI6IDI1LjYwNDY4NDd9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiQXQgdGhlIHJvdW5kYWJvdXQsIHRha2UgdGhlIDxiPjJuZDwvYj4gZXhpdCBhbmQgc3RheSBvbiA8Yj5TdHJhZGEgMTMgRGVjZW1icmllPC9iPi88d2JyLz48Yj5ESjEwMzwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjUzMjkzNSwgImxuZyI6IDI1LjYwNDY4NDd9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NTA3MDIsICJsbmciOiAyNS42MDM5NTAyfSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIkF0IHRoZSByb3VuZGFib3V0LCB0YWtlIHRoZSA8Yj4ybmQ8L2I+IGV4aXQgb250byA8Yj5TdHJhZGEgMTMgRGVjZW1icmllPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NTA3MDIsICJsbmciOiAyNS42MDM5NTAyfSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQ5OTgzNSwgImxuZyI6IDI1LjYwMzI3NjF9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiU2xpZ2h0IDxiPnJpZ2h0PC9iPiB0b3dhcmQgPGI+U3RyYWRhIEl1bGl1IE1hbml1PC9iPi88d2JyLz48Yj5ETjFFPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDk5ODM1LCAibG5nIjogMjUuNjAzMjc2MX0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0NjYzMDU5OTk5OTk5LCAibG5nIjogMjUuNTk3MjE4OX0sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPnJpZ2h0PC9iPiBvbnRvIDxiPlN0cmFkYSBJdWxpdSBNYW5pdTwvYj4vPHdici8+PGI+RE4xRTwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQ2NjMwNTk5OTk5OTksICJsbmciOiAyNS41OTcyMTg5fSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQ2OTg0NiwgImxuZyI6IDI1LjU4OTI4NjV9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiU2xpZ2h0IDxiPnJpZ2h0PC9iPiB0byBzdGF5IG9uIDxiPlN0cmFkYSBJdWxpdSBNYW5pdTwvYj4vPHdici8+PGI+RE4xRTwvYj48ZGl2IHN0eWxlPVwiZm9udC1zaXplOjAuOWVtXCI+Q29udGludWUgdG8gZm9sbG93IEROMUU8L2Rpdj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQ2OTg0NiwgImxuZyI6IDI1LjU4OTI4NjV9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDU4MjYxLCAibG5nIjogMjUuNTg5NjM0fSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIlR1cm4gPGI+bGVmdDwvYj4gb250byA8Yj5TdHJhZGEgTHVuZ1x1MDEwMzwvYj4vPHdici8+PGI+RE4xRTwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQ1ODI2MSwgImxuZyI6IDI1LjU4OTYzNH0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0Mjg4ODQsICJsbmciOiAyNS41ODg4MDc4fSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIkF0IHRoZSByb3VuZGFib3V0LCB0YWtlIHRoZSA8Yj4ybmQ8L2I+IGV4aXQgb250byA8Yj5TdHJhZGEgTXVyZVx1MDIxOWVuaWxvcjwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQyODg4NCwgImxuZyI6IDI1LjU4ODgwNzh9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDE4NzM5LCAibG5nIjogMjUuNTg4MjExfSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIkNvbnRpbnVlIG9udG8gPGI+UGlhXHUwMjFiYSBTZmF0dWx1aTwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQxODczOSwgImxuZyI6IDI1LjU4ODIxMX0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MDA5NywgImxuZyI6IDI1LjU4NTE1MzN9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiQ29udGludWUgb250byA8Yj5TdHIgR2hlb3JnaGUgQmFyaVx1MDE2M2l1PC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDAwOTcsICJsbmciOiAyNS41ODUxNTMzfSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM5ODExOCwgImxuZyI6IDI1LjU4NTI1NDR9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiQXQgdGhlIHJvdW5kYWJvdXQsIHRha2UgdGhlIDxiPjNyZDwvYj4gZXhpdCJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42Mzk4MTE4LCAibG5nIjogMjUuNTg1MjU0NH0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzODg4ODgsICJsbmciOiAyNS41ODU2MDExfSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIkNvbnRpbnVlIG9udG8gPGI+XHUwMjE4aXJ1bCBMdWR3aWcgdmFuIEJlZXRob3ZlbjwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM4ODg4OCwgImxuZyI6IDI1LjU4NTYwMTF9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDA2MDk2LCAibG5nIjogMjUuNTg5Nzg3Mn0sICJodG1sX2luc3RydWN0aW9ucyI6ICJBdCB0aGUgcm91bmRhYm91dCwgdGFrZSB0aGUgPGI+MXN0PC9iPiBleGl0IG9udG8gPGI+U3RyYWRhIFBvYXJ0YSBTY2hlaTwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQwNjA5NiwgImxuZyI6IDI1LjU4OTc4NzJ9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDEzNTYzLCAibG5nIjogMjUuNTkxMDk5N30sICJodG1sX2luc3RydWN0aW9ucyI6ICJIZWFkIDxiPm5vcnRoZWFzdDwvYj4gb24gPGI+U3RyYWRhIEdyaWdvcmFcdTAyMTkgRGluaWN1PC9iPiB0b3dhcmQgPGI+U3RyYWRhIEpvaGFubiBHXHUwMGY2dHQ8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MTM1NjMsICJsbmciOiAyNS41OTEwOTk3fSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQzNjE2MSwgImxuZyI6IDI1LjU5NzA4MX0sICJodG1sX2luc3RydWN0aW9ucyI6ICI8Yj5TdHJhZGEgR3JpZ29yYVx1MDIxOSBEaW5pY3U8L2I+IHR1cm5zIDxiPnJpZ2h0PC9iPiBhbmQgYmVjb21lcyA8Yj5TdHJhZGEgTmljb2xhZSBCXHUwMTAzbGNlc2N1PC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDM2MTYxLCAibG5nIjogMjUuNTk3MDgxfSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQzMjczNjk5OTk5OTksICJsbmciOiAyNS41OTc1MjQ5fSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIlR1cm4gPGI+cmlnaHQ8L2I+IG9udG8gPGI+U3RyYWRhIENvbnN0YW50aW4gRG9icm9nZWFudS1HaGVyZWE8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MzI3MzY5OTk5OTk5LCAibG5nIjogMjUuNTk3NTI0OX0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzNzA5NzM5OTk5OTk5LCAibG5nIjogMjUuNTg3MjQ0fSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIlR1cm4gPGI+cmlnaHQ8L2I+IG9udG8gPGI+U3RyYWRhIENhc3RlbHVsdWk8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzNzA5NzM5OTk5OTk5LCAibG5nIjogMjUuNTg3MjQ0fSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM1Nzg3MDk5OTk5OTksICJsbmciOiAyNS41ODgwODAzfSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIlR1cm4gPGI+bGVmdDwvYj4gb250byA8Yj5cdTAyMThpcnVsIFBsXHUwMTAzaWVcdTAyMTlpbG9yPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42MzU3ODcwOTk5OTk5OSwgImxuZyI6IDI1LjU4ODA4MDN9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42MzYyNjI5LCAibG5nIjogMjUuNTg5MjUxMX0sICJodG1sX2luc3RydWN0aW9ucyI6ICJTaGFycCA8Yj5sZWZ0PC9iPiBvbnRvIDxiPlN0cmFkYSBQZXRcdTAxNTFmaSBTXHUwMGUxbmRvcjwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM2MjYyOSwgImxuZyI6IDI1LjU4OTI1MTF9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42MzYzMjM4LCAibG5nIjogMjUuNTg5MjY1M30sICJodG1sX2luc3RydWN0aW9ucyI6ICJIZWFkIDxiPm5vcnRoPC9iPiB0b3dhcmQgPGI+U3RyYWRhIFBldFx1MDE1MWZpIFNcdTAwZTFuZG9yPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42MzYzMjM4LCAibG5nIjogMjUuNTg5MjY1M30sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzNTc4NzA5OTk5OTk5LCAibG5nIjogMjUuNTg4MDgwM30sICJodG1sX2luc3RydWN0aW9ucyI6ICJDb250aW51ZSBvbnRvIDxiPlN0cmFkYSBQZXRcdTAxNTFmaSBTXHUwMGUxbmRvcjwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM1Nzg3MDk5OTk5OTksICJsbmciOiAyNS41ODgwODAzfSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM1NzUwMiwgImxuZyI6IDI1LjU4ODA1OTJ9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiVHVybiA8Yj5sZWZ0PC9iPiBvbnRvIDxiPlx1MDIxOGlydWwgUGxcdTAxMDNpZVx1MDIxOWlsb3I8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzNTc1MDIsICJsbmciOiAyNS41ODgwNTkyfSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM2NDg2LCAibG5nIjogMjUuNTg3OTE0Nn0sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPnJpZ2h0PC9iPiB0byBzdGF5IG9uIDxiPlx1MDIxOGlydWwgUGxcdTAxMDNpZVx1MDIxOWlsb3I8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzNjQ4NiwgImxuZyI6IDI1LjU4NzkxNDZ9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42MzcwOTczOTk5OTk5OSwgImxuZyI6IDI1LjU4NzI0NH0sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPmxlZnQ8L2I+IHRvIHN0YXkgb24gPGI+XHUwMjE4aXJ1bCBQbFx1MDEwM2llXHUwMjE5aWxvcjwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM3MDk3Mzk5OTk5OTksICJsbmciOiAyNS41ODcyNDR9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42MzY4NDc2LCAibG5nIjogMjUuNTg2ODU2Nn0sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPmxlZnQ8L2I+IG9udG8gPGI+U3RyYWRhIENhc3RlbHVsdWk8L2I+In0sIHsic3RhcnRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjYzNjg0NzYsICJsbmciOiAyNS41ODY4NTY2fSwgImVuZF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM4Nzk2NCwgImxuZyI6IDI1LjU4NTcxNjl9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiVHVybiA8Yj5yaWdodDwvYj4gb250byA8Yj5TdHJhZGEgRG9jdG9yIEdoZW9yZ2hlIEJhaXVsZXNjdTwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjM4Nzk2NCwgImxuZyI6IDI1LjU4NTcxNjl9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDA2MDk2LCAibG5nIjogMjUuNTg5Nzg3Mn0sICJodG1sX2luc3RydWN0aW9ucyI6ICJBdCB0aGUgcm91bmRhYm91dCwgY29udGludWUgc3RyYWlnaHQgb250byA8Yj5TdHJhZGEgUG9hcnRhIFNjaGVpPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDA2MDk2LCAibG5nIjogMjUuNTg5Nzg3Mn0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MTM1NjMsICJsbmciOiAyNS41OTEwOTk3fSwgImh0bWxfaW5zdHJ1Y3Rpb25zIjogIkNvbnRpbnVlIG9udG8gPGI+U3RyYWRhIEdyaWdvcmFcdTAyMTkgRGluaWN1PC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDEzNTYzLCAibG5nIjogMjUuNTkxMDk5N30sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MzYxNjEsICJsbmciOiAyNS41OTcwODF9LCAiaHRtbF9pbnN0cnVjdGlvbnMiOiAiPGI+U3RyYWRhIEdyaWdvcmFcdTAyMTkgRGluaWN1PC9iPiB0dXJucyA8Yj5yaWdodDwvYj4gYW5kIGJlY29tZXMgPGI+U3RyYWRhIE5pY29sYWUgQlx1MDEwM2xjZXNjdTwvYj4ifSwgeyJzdGFydF9sb2NhdGlvbiI6IHsibGF0IjogNDUuNjQzNjE2MSwgImxuZyI6IDI1LjU5NzA4MX0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MzI3MzY5OTk5OTk5LCAibG5nIjogMjUuNTk3NTI0OX0sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPnJpZ2h0PC9iPiBvbnRvIDxiPlN0cmFkYSBDb25zdGFudGluIERvYnJvZ2VhbnUtR2hlcmVhPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDMyNzM2OTk5OTk5OSwgImxuZyI6IDI1LjU5NzUyNDl9LCAiZW5kX2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDEwMDM4LCAibG5nIjogMjUuNTkyNzQyOH0sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPnJpZ2h0PC9iPiBvbnRvIDxiPlN0cmFkYSBDYXN0ZWx1bHVpPC9iPiJ9LCB7InN0YXJ0X2xvY2F0aW9uIjogeyJsYXQiOiA0NS42NDEwMDM4LCAibG5nIjogMjUuNTkyNzQyOH0sICJlbmRfbG9jYXRpb24iOiB7ImxhdCI6IDQ1LjY0MDIyNiwgImxuZyI6IDI1LjU5MzQ3N30sICJodG1sX2luc3RydWN0aW9ucyI6ICJUdXJuIDxiPmxlZnQ8L2I+IG9udG8gPGI+U3RyYWRhIFN1aVx1MDIxOXVsIENhc3RlbHVsdWk8L2I+In1d";
       const decodedInstructions = JSON.parse(atob(instructionsBase64));
-      console.log(decodedInstructions);
+      //console.log(decodedInstructions);
 
       // Polyline from backend, see decode-route.py
       const routePolylineBase64 = "cWl1dUdzZ2h7Q1B7RUZlQERTekBWakFcakJ6QH5BcEBARkRITEpKRExBSkdCRVZDZEV0QFJAZE5mRH5HYkJ0QV5mQExkQFhSTGZAUFBKUFRCSkZKSEZKQEpDSEdCRVJFdkBMfkFeWkRYQ05GckRgQWJATEZOaEB0QGZBekBORERBTmBBbkJ+S2pAdkNUdkFeckJUcEBYZEBSTFZIakFGeEBOUEhgQFZWVnJBZEJ4QGxBSmRARFxoQHpJP3ZBQ3ZAb0F+UGVAZkhJfEJAWmJATXpDY0FWRFBMSExMRkxBTklER3ZAT2ZCWGpASnBEaEF0RHBBaEJ4QHhAZkB8QH5AYkF0QWpAaEFkQWRDbEBiQnxAbkNATj9MREhIQkZDRlFYX0BuQ2FBaEBDQD9CQUJDQkVAT0NPR0dLQUNCX0NlSGdBY0RxQWNFc0BlQ21Ae0NPYUBRUXdAa0BNSVN9QWdAaURXZ0FfQWtEbUJ9SHtAd0NtQntESU9NTUhLekBrQWpBYEJOTnBAdkBKUlhsQFpyQXpAdERgQWZFWmBBbkBiQmpAdkF6QnRGckNgRmpBYEJ+QXZBekBwQHxBekJ6QGRBYkFmQnRAfEFyQnlCSmNAUmFBRENGQWJCfEBpQnNFQUlAT0pCS0NBTkBIWnZAbEF6Q0ZCP3BAQ1hFTGlDe0BhQGhAd0F6QXBAakFxR3REeUFqQU1VS0k/R0FHR0lLQUNAU2dAZUFnRG9Cd0ZlQ2lJbUB7Q09hQFFRd0BrQE1JU31BZ0BpRFdnQV9Ba0RtQn1Ie0B3Q2FAe0B1QW9DTU1IS3pAa0FqQWBCTk5wQHZASlJYbEBackF6QHREYEFmRVpgQW5AYkJqQHZBdkJvQmBAY0A=";
@@ -178,7 +125,7 @@
           geodesic: true,
           strokeColor: '#0031FF',
           strokeOpacity: 0.5,
-          strokeWeight: 6
+          strokeWeight: 10
       });
 
       myPolyline.setMap(map);
@@ -188,11 +135,16 @@
       myMarker = new google.maps.Marker({
           position: startPosition,
           map: map,
-          icon: 'arrow_shadow.png'
+          icon: {
+            url: 'arrow_shadow.png',
+            size: new google.maps.Size(42, 42), 
+            anchor: new google.maps.Point(22, 20),
+            optimized: false
+          }
       });
 
       // Center the map slightly at the bottom
-      let newVerticalCenter = startPosition.lng() + 0.0003;
+      let newVerticalCenter = startPosition.lng() + 0.0002;
       map.setCenter(new google.maps.LatLng(startPosition.lat(), newVerticalCenter));
 
       function adjustMapCenterWithHeading(map, startPosition, heading, offset) {
@@ -211,12 +163,7 @@
           map.setCenter(new google.maps.LatLng(newLat, newLng));
       }
 
-      function isWithinLegBounds(position, start, end) {
-        return position.lat >= Math.min(start.lat, end.lat) &&
-               position.lat <= Math.max(start.lat, end.lat) &&
-               position.lng >= Math.min(start.lng, end.lng);
-      }
-
+      // Calculate distance between two coordiates
       function haversineDistance(coords1, coords2, isMiles = false) {
         function toRad(x) {
             return x * Math.PI / 180;
@@ -253,53 +200,88 @@
         return closestLeg;
       }
 
-      //let currentInstruction = 0;
-      //document.getElementById("instruction-text").innerHTML = decodedInstructions[currentInstruction].html_instructions;
 
-      // Update instruction for routing
-      function updateInstruction(position) {
-        for (let i = 0; i < decodedInstructions.length; i++) {
-            const leg = decodedInstructions[i];
-            const start = leg.start_location;
-            const end = leg.end_location;
 
-            // Check if within bounds of start and end
-            if (isWithinLegBounds(position, start, end)) {
-                if (currentInstruction !== i) {
-                    currentInstruction = i;
-                    document.getElementById("instruction-text").innerHTML = leg.html_instructions;
-                }
-                break;
-            }
-        }
+      // Bearing is needed for the correct direction/angle of the arrow
+      function degreesToRadians(degrees) {
+        return degrees * Math.PI / 180;
+      }
+
+      function radiansToDegrees(radians) {
+        return radians * 180 / Math.PI;
+      }
+
+      function calculateBearing(startLat, startLng, destLat, destLng) {
+        const startLatRad = degreesToRadians(startLat);
+        const startLngRad = degreesToRadians(startLng);
+        const destLatRad = degreesToRadians(destLat);
+        const destLngRad = degreesToRadians(destLng);
+
+        const y = Math.sin(destLngRad - startLngRad) * Math.cos(destLatRad);
+        const x = Math.cos(startLatRad) * Math.sin(destLatRad) -
+                Math.sin(startLatRad) * Math.cos(destLatRad) * Math.cos(destLngRad - startLngRad);
+        
+        const bearing = radiansToDegrees(Math.atan2(y, x));
+        return (bearing + 360) % 360; // Normalize to 0-360 degrees
       }
 
       // Driving simulation
       // First, interpolate route to make it more granular
-      const simulatedRoute = interpolateGpsCoordinates(latLngPolyline, 15000);
+      // helper to generate more GPS coordinates then there actually are
+      function interpolateGpsCoordinates(points, targetLength) {
+          const interpolatedPoints = [];
+          const totalOriginalPoints = points.length;
+          const intervals = targetLength / (totalOriginalPoints - 1);
+
+          for (let i = 0; i < totalOriginalPoints - 1; i++) {
+              const start = points[i];
+              const end = points[i + 1];
+
+              for (let j = 0; j < intervals; j++) {
+                  const lat = start.lat + (end.lat - start.lat) * (j / intervals);
+                  const lng = start.lng + (end.lng - start.lng) * (j / intervals);
+                  interpolatedPoints.push({ lat, lng });
+              }
+          }
+
+          // Make sure to add the last point of the original array
+          interpolatedPoints.push(points[points.length - 1]);
+
+          return interpolatedPoints;
+      }
+
+      const simulatedRoute = interpolateGpsCoordinates(latLngPolyline, 10000);
 
       // Now move forward in defined interval
       let step = 0;
-      const timeInterval = 100; // Duration in milliseconds between each step
+      const timeInterval = 75; // Duration in milliseconds between each step
 
       // Function to move the marker
       function moveMarker() {
           if (step < simulatedRoute.length - 1) {
               var currentPos = simulatedRoute[step];
               var nextPos = simulatedRoute[step + 1];
-              var heading = google.maps.geometry.spherical.computeHeading(currentPos, nextPos);
-
-              map.setHeading(heading);
-              //map.setCenter(currentPos);
+              
+              // Heading seems unsupported in Chromium on Raspberry Linux
+              //var heading = google.maps.geometry.spherical.computeHeading(currentPos, nextPos);
+              //map.setHeading(heading);
+              map.setCenter(currentPos);
               myMarker.setPosition(currentPos);
 
+              // Update marker direction
+              let angle = calculateBearing(currentPos.lat, currentPos.lng, nextPos.lat, nextPos.lng);
+              const markerImage = document.querySelector('img[src="arrow_shadow.png"]');
+              if(markerImage) {
+                markerImage.style.transform = "rotate(" + angle + "deg)";
+              }
+
               // Update navigation instruction for the next turn
-              //updateInstruction(currentPos);
               let closestLeg = findClosestLeg(currentPos, decodedInstructions);
               document.getElementById("instruction-text").innerHTML = closestLeg.html_instructions;
 
               // Position the map so it points "north" all the time
-              adjustMapCenterWithHeading(map, currentPos, heading, 0.0003);
+              // This does not work on Zero 2 Chromium, maybe for resource reasons
+              //adjustMapCenterWithHeading(map, currentPos, heading, 0.0002);
 
               step++;
           } else {
@@ -312,7 +294,4 @@
     </script>
 
   </body>
-
-  
-
 </html>
