@@ -3,7 +3,8 @@
 This is a minimal navogation project to see how far one can go using gmaps API & standard/cheap hardware. The goal is to run a fully working routing application on a Raspberry Pi Zero 2 (~$15) with convenient performance using web technologies where everything (screen + board) is powered by a battery.
 
 See the **demo**:
-![Routing demo video](demo/zeropi-routing-720.mp4)
+
+<video src="https://github.com/janpetzold/gmaps-js-routing-playground/raw/main/demo/zeropi-routing-720.mp4" width="1280" />
 
 ## Background
 
