@@ -36,3 +36,5 @@ So in total this means when routing I ended up with an average power consumption
 ## Limits
 
 The performance of the Raspberry Pi seems to be insufficient for advanced Google Maps features based on WebGL like [change of heading](https://developers.google.com/maps/documentation/javascript/webgl/tilt-rotation) or [vector maps](https://developers.google.com/maps/documentation/javascript/vector-map) in general for some kind of 3D view. This worked on "faster" machines where the route then looked like this which is much closer to an actual navigation system:
+
+![Vector map view](demo/vector-map.png)
