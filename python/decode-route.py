@@ -23,7 +23,7 @@ def extract_route_details(directions_result):
     return route_details
 
 # Link from Google Maps for given route with four waypoints
-gmaps_url = 'https://maps.app.goo.gl/5t2vbyiqKXTZQoM69'
+gmaps_url = 'https://maps.app.goo.gl/CYG3nEqdHmXxGRoQA'
 decoded_url = requests.get(gmaps_url)
 
 #print(f"Decoded URL is {decoded_url.url}")
