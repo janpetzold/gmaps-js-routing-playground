@@ -4,7 +4,7 @@ This is a minimal navogation project to see how far one can go using gmaps API &
 
 See the **demo**:
 
-<video src="https://github.com/janpetzold/gmaps-js-routing-playground/raw/main/demo/zeropi-routing-720.mp4" width="1280" />
+https://github.com/janpetzold/gmaps-js-routing-playground/assets/1469105/1c04be10-dbf2-4bb6-9941-1f251d706037
 
 ## Background
 
